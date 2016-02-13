@@ -22,8 +22,8 @@ def home():
 
 @app.route("/request", methods = ["GET"])
 def process_request():
-
-    return requests.get('https://graph.facebook.com/me/photos/?access_token=' + request.args['facebook_token']).content
+    return requests.get('https://graph.facebook.com/me/photos/?fields=id,created_time&access_token=' + request.args['facebook_token']).content)
+    # return data
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
