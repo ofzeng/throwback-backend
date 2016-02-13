@@ -45,19 +45,21 @@ def getCode():
 
 @app.route("/getSongs")
 def getSongs():
-	jsonSongs = unicode(requests.get("https://api.spotify.com/v1/me/tracks?access_token=" + request.args['spotify_token']).content, "utf-8")
+	#return str(requests.get("https://api.spotify.com/v1/me/tracks?access_token=" + request.args['spotify_token']).content)
+	r = requests.get("https://api.spotify.com/v1/me/tracks?access_token=" + request.args['spotify_token'])
+	jsonSongs = r.json() #unicode(requests.get("https://api.spotify.com/v1/me/tracks?access_token=" + request.args['spotify_token']).content, "utf-8")
 	"""content = unicode(jsonSongs.strip(codecs.BOM_UTF8), 'utf-8')
 	parser = make_parser()
 	parser.parse(StringIO.StringIO(content))"""
-	dictionary = json.loads(jsonSongs)
-	songs = dictionary['items']
-	songsParsed = []
+	#dictionary = json.loads(jsonSongs)
+	songs = jsonSongs['items']#dictionary['items']
+	"""songsParsed = []
 	for song in songs:
 		songsParsed.append({"added_at":song['added_at'], "id":song['track']['id'], 'name':song['track']['name']})
 		print(song["added_at"], file=sys.stderr) 
 		print(song['track']['id'], file=sys.stderr)
-		print(song['track']['name'], file=sys.stderr)
-	return str(songsParsed)
+		print(song['track']['name'], file=sys.stderr)"""
+	return str(songs)
 
 @app.route("/request", methods = ["GET"])
 def process_request():
