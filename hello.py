@@ -1,6 +1,7 @@
 """Cloud Foundry test"""
 from flask import Flask, request
 import os
+import requests
 
 app = Flask(__name__)
 
@@ -21,7 +22,8 @@ def home():
 
 @app.route("/request", methods = ["GET"])
 def process_request():
-    return request.args['facebook_token']
+
+    return requests.get('https://graph.facebook.com/me/photos/?access_token=' + request.args['facebook_token']).content
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
