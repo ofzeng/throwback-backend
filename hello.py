@@ -1,8 +1,10 @@
 """Cloud Foundry test"""
-from flask import Flask
+from flask import Flask, request
 import os
 
 app = Flask(__name__)
+
+app.config['PROPAGATE_EXCEPTIONS'] = True
 
 # On Bluemix, get the port number from the environment variable VCAP_APP_PORT
 # When running this app on the local machine, default the port to 8080
@@ -14,7 +16,7 @@ def hello():
 
 @app.route("/home", methods = ["GET", "POST"])
 def home():
- return "Home Page"
+    return "Home Page"
 
 
 @app.route("/request", methods = ["GET"])
