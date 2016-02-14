@@ -39,7 +39,7 @@ def getCode():
 	#return request.args['code']
 	return requests.post("https://accounts.spotify.com/api/token", data = {"code": request.args['code'], "grant_type": "authorization_code", "redirect_uri": "https://throwback.mybluemix.net/getCode", "client_id": "b4f179be39ec4098b5b972cdad7f03fb", "client_secret": "c951d664306649d4a29f4411e1a9c56d"}).content
 
-def match_songs_photos(songs, photos, facebook_token):
+def match_songs_photos(songs, photos, facebook_token, spotify_token):
     #returnString = ""
     elements = [ ]
     for s in songs:
@@ -47,7 +47,7 @@ def match_songs_photos(songs, photos, facebook_token):
         time = dateutil.parser.parse(date_string)
         uri = s['track']['uri']
         # print time
-        element = {'type': 'song', 'time': time, 'id': uri}
+        element = {'type': 'song', 'time': time, 'id': uri, 'title': s['track']['name']}
         elements.append(element)
     for p in photos:
         date_string = p.get('backdated_time', p['created_time'])
@@ -76,7 +76,8 @@ def match_songs_photos(songs, photos, facebook_token):
             last_song = element
         if (element['type'] == 'photo'):
         	if last_song is not None:
-        		following_photos.append({'id':element['id'], 'comment':element['comment'], 'date':element['old_time']})
+        		song_name = last_song.get('title', "NO TITLE FOUND")
+        		following_photos.append({'id':element['id'], 'comment':element['comment'], 'date':element['old_time'], 'title': song_name})
 
     for period in time_periods:
     	if (len(period['photos']) > 7):
@@ -89,7 +90,12 @@ def match_songs_photos(songs, photos, facebook_token):
     batchRequest = []
     i = 0
     for time_period in time_periods:
+    	song_id = time_period['songs'][0][14:]
+    	print "SONG ID: " + song_id + "\n"
+    	song_title = requests.get('https://api.spotify.com/v1/tracks/' + song_id + '?access_token=' + spotify_token).json()
     	for photo in time_period['photos']:
+    		print "JSON OF SONG " + str(song_title) + "\n"
+    		photo['song_title'] = song_title['name']
     		batchRequest.append({'method':'GET', 'relative_url':photo['id'] + '/' + 'comments'})
     		i += 1
     		if (i >= 45):
@@ -221,7 +227,7 @@ def process_request():
     #songs = r.json()['items']
     #photos = [{'id': 'p1', 'time': '2'}, {'id': 'p2', 'time': '3'},{'id': 'p3', 'time': '5'}]
     #songs =  [{'id': 's1', 'time': 1},{'id': 's2', 'time': 4}]
-    time_periods = match_songs_photos(songs,photos,request.args['facebook_token'])
+    time_periods = match_songs_photos(songs,photos,request.args['facebook_token'], request.args['spotify_token'])
 
     return jsonify({'time_periods': time_periods})
 
