@@ -1,5 +1,4 @@
 Flask
-requests
 print_function
 operator
 sys
