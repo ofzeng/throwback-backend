@@ -77,6 +77,8 @@ def match_songs_photos(songs, photos):
     for period in time_periods:
     	if (len(period['photos']) > 7):
     	    period['photos'] = period['photos'][0:6]
+    if len(time_periods) > 6:
+    	time_periods = time_periods[0:5]
     return time_periods
 
 def get_all_songs(spotify_token):
