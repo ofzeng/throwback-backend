@@ -49,7 +49,7 @@ def match_songs_photos(songs, photos):
         element = {'type': 'song', 'time': time, 'id': uri}
         elements.append(element)
     for p in photos:
-        date_string = p['created_time']
+        date_string = p.get('backdated_time', p['created_time'])
         time = dateutil.parser.parse(date_string)
         # print time
         element = {'type': 'photo', 'time': time, 'id': p['id']}
@@ -65,7 +65,7 @@ def match_songs_photos(songs, photos):
     following_photos = [ ];
     for element in elements:
         if (element['type'] == 'song'):
-            if (last_song != '' and len(following_photos) > 0):
+            if (last_song != '' and len(following_photos) > 4):
                 time_period = {'songs': [last_song['id']], 'photos': following_photos}
                 time_periods.append(time_period)
             last_song = element
@@ -79,23 +79,39 @@ def match_songs_photos(songs, photos):
     return time_periods
 
 def get_all_songs(spotify_token):
-	i = 0;
 	songs = []
 	next = 'https://api.spotify.com/v1/me/tracks?limit=50&offset=0'
 	while (not (next is None)):
-		print "NEXT IS " + next + "\n\n"
+		#print "NEXT IS " + next + "\n\n"
 		r = requests.get(next + '&access_token=' + spotify_token)
 		response = r.json()
-		print "JSON CONTENT: " + r.content + "\n\n"
+		#print "JSON CONTENT: " + r.content + "\n\n"
 		songs.extend(response['items'])
 		#return songs
 		next = response['next']
 	return songs
 
+def get_all_photos(facebook_token):
+	photos = []
+	next = 'https://graph.facebook.com/me/photos/uploaded/?fields=id,created_time,backdated_time'
+	while (not (next is None)):
+		#print "NEXT IS " + next + "\n\n"
+		r = requests.get(next + '&access_token=' + facebook_token)
+		response = r.json()
+		#print "JSON CONTENT: " + r.content + "\n\n"
+		try:
+			photos.extend(response['data'])
+			next = response['paging']['next']
+		except:
+			break
+		#return photos
+	return photos
+
 @app.route("/request", methods = ["GET"])
 def process_request():
-    r = requests.get('https://graph.facebook.com/me/photos/?fields=id,created_time&access_token=' + request.args['facebook_token'])
-    photos = r.json()['data']
+    #r = requests.get('https://graph.facebook.com/me/photos/?fields=id,created_time&access_token=' + request.args['facebook_token'])
+    photos = get_all_photos(request.args['facebook_token'])
+    #r.json()['data']
     # print photos
     #return str(get_all_songs(request.args['spotify_token']))
     songs = get_all_songs(request.args['spotify_token'])
