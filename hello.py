@@ -1,5 +1,5 @@
 """Cloud Foundry test"""
-from __future__ import print_function # In python 2.7
+
 from flask import Flask, request, redirect, jsonify, json
 from operator import itemgetter
 
