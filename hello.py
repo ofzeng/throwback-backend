@@ -90,7 +90,7 @@ def get_all_songs(spotify_token):
 
 def get_all_photos(facebook_token):
 	photos = []
-	next = 'https://graph.facebook.com/me/photos/uploaded/?fields=id,created_time,backdated_time'
+	next = 'https://graph.facebook.com/me/photos/?fields=id,created_time,backdated_time'
 	while (not (next is None)):
 		#print "NEXT IS " + next + "\n\n"
 		r = requests.get(next + '&access_token=' + facebook_token)
