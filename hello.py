@@ -34,6 +34,11 @@ def home():
 def getToken():
 	return redirect("https://accounts.spotify.com/authorize/?client_id=b4f179be39ec4098b5b972cdad7f03fb&response_type=code&redirect_uri=https://throwback.mybluemix.net/getCode&scope=playlist-read-private%20user-library-read", code=302)
 
+@app.route("/omg/lol/giffy")
+def dank():
+	gif = '<iframe src="//giphy.com/embed/3oEdvd2FBjUEDQ4FJS" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="http://giphy.com/gifs/cat-motivation-motivational-speaker-3oEdvd2FBjUEDQ4FJS">via GIPHY</a></p><iframe src="//giphy.com/embed/14aUO0Mf7dWDXW" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="http://giphy.com/gifs/embarrassed-facepalm-panda-14aUO0Mf7dWDXW">via GIPHY</a></p>'
+	return gif
+
 @app.route("/getCode")
 def getCode():
 	#return request.args['code']
@@ -91,10 +96,10 @@ def match_songs_photos(songs, photos, facebook_token, spotify_token):
     i = 0
     for time_period in time_periods:
     	song_id = time_period['songs'][0][14:]
-    	print "SONG ID: " + song_id + "\n"
+    	#print "SONG ID: " + song_id + "\n"
     	song_title = requests.get('https://api.spotify.com/v1/tracks/' + song_id + '?access_token=' + spotify_token).json()
     	for photo in time_period['photos']:
-    		print "JSON OF SONG " + str(song_title) + "\n"
+    		#print "JSON OF SONG " + str(song_title) + "\n"
     		photo['song_title'] = song_title['name']
     		batchRequest.append({'method':'GET', 'relative_url':photo['id'] + '/' + 'comments'})
     		i += 1
