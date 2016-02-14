@@ -9,6 +9,7 @@ import json
 import codecs
 import parser
 import requests
+import timeit
 
 import dateutil.parser
 
@@ -50,9 +51,10 @@ def match_songs_photos(songs, photos, facebook_token):
         elements.append(element)
     for p in photos:
         date_string = p.get('backdated_time', p['created_time'])
+        comment = p.get('comment', '')
         time = dateutil.parser.parse(date_string)
         # print time
-        element = {'type': 'photo', 'time': time, 'old_time': date_string, 'id': p['id']}
+        element = {'type': 'photo', 'time': time, 'old_time': date_string, 'id': p['id'], 'comment': comment}
         elements.append(element)
         #returnString += "Adding photo + " + element + "\n"
 
@@ -74,7 +76,7 @@ def match_songs_photos(songs, photos, facebook_token):
             last_song = element
         if (element['type'] == 'photo'):
         	if last_song is not None:
-        		following_photos.append({'id':element['id'], 'comment':get_top_comment(element['id'], facebook_token), 'date':element['old_time']})
+        		following_photos.append({'id':element['id'], 'comment':element['comment'], 'date':element['old_time']})
 
     for period in time_periods:
     	if (len(period['photos']) > 7):
@@ -96,13 +98,11 @@ def get_all_songs(spotify_token):
 		next = response['next']
 	return songs
 
-def get_top_comment(photo_id,access_token):
-    comments = []
-
-    r = requests.get("https://graph.facebook.com/" + photo_id + "/comments?access_token=" + access_token)
-    print "MESSAGES: " + r.content + "\n"
-    response = r.json()
-    comments = response['data'] 
+def get_top_comment(comments):
+    #r = requests.get("https://graph.facebook.com/" + photo_id + "/comments?access_token=" + access_token)
+    #print "MESSAGES: " + r.content + "\n"
+    #response = r.json()
+    #comments = response['data'] 
     
     max_likes = 0
     top_comment = ''
@@ -110,7 +110,7 @@ def get_top_comment(photo_id,access_token):
         if comment.get('like_count', 0) > max_likes:
             max_likes = comment.get('like_count', 0)
             top_comment = comment['from']['name'] + ': ' + comment['message']
-
+    end = timeit.timeit()
     return top_comment
 
 def get_all_photos_tagged(facebook_token):
@@ -149,6 +149,34 @@ def get_all_photos(facebook_token):
 	photos = get_all_photos_uploaded(facebook_token)
 	photos.extend(get_all_photos_tagged(facebook_token))
 	print "\nPHOTOS: " + str(photos) + "\n"
+
+	batchRequest = []
+	i = 0
+	for photo in photos:
+		batchRequest.append({'method':'GET', 'relative_url':photo['id'] + '/' + 'comments'})#,"body":"message=Test status update&amp;link=http://developers.facebook.com/"})
+		#batchRequest.append({'method':'GET','relative_url':'me/feed?limit=1'})
+		#print "BATCH REQUEST IS NOW " + str(batchRequest)
+		i += 1
+		if (i >= 45):
+			break
+	print "REQUEST " + str(json.dumps(batchRequest)) + "\n"
+
+	comments = requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
+	print "NUMBER COMMENTS " + str(len(comments)) + "\n"
+	i = 0
+	for photo in photos:
+		try:
+			photo['comment'] =  get_top_comment(json.loads(str(comments[i]['body']))['data'])#['from']['name']
+		except:
+			break;
+		i = i + 1
+		if (i >= 45):
+			break
+	#print "COMMENTS " + str(comments) + "\n"
+	for comment in comments:
+		print "DATA in comment: " + comment['body'] + '\n'#['data'] + '\n'
+		print "JSONIFIED DATA: " + str(json.loads(str(comment['body']))['data']) + "\n"
+
 	return photos
 
 @app.route("/request", methods = ["GET"])
