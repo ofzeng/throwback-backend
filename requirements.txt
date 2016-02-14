@@ -1,8 +1,2 @@
 Flask
-operator
-sys
-os
-json
-codecs
-parser
 requests
