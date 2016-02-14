@@ -38,7 +38,7 @@ def getCode():
 	#return request.args['code']
 	return requests.post("https://accounts.spotify.com/api/token", data = {"code": request.args['code'], "grant_type": "authorization_code", "redirect_uri": "https://throwback.mybluemix.net/getCode", "client_id": "b4f179be39ec4098b5b972cdad7f03fb", "client_secret": "c951d664306649d4a29f4411e1a9c56d"}).content
 
-def match_songs_photos(songs, photos):
+def match_songs_photos(songs, photos, facebook_token):
     #returnString = ""
     elements = [ ]
     for s in songs:
@@ -74,7 +74,7 @@ def match_songs_photos(songs, photos):
             last_song = element
         if (element['type'] == 'photo'):
         	if last_song is not None:
-        		following_photos.append({'id':element['id'], 'comment':'NOT IMPLEMENTED', 'date':element['old_time']})
+        		following_photos.append({'id':element['id'], 'comment':get_top_comment(element['id'], facebook_token), 'date':element['old_time']})
 
     for period in time_periods:
     	if (len(period['photos']) > 7):
@@ -95,6 +95,22 @@ def get_all_songs(spotify_token):
 		#return songs
 		next = response['next']
 	return songs
+
+def get_top_comment(photo_id,access_token):
+    comments = []
+
+    r = requests.get("https://graph.facebook.com/"+photo_id+"/comments?access_token="+access_token)
+    response = r.json()
+    comments = response['data'] 
+    
+    max_likes = 0
+    top_comment = ''
+    for comment in comments:
+        if comment['like_count'] > max_likes:
+            max_likes = comment['like_count']
+            top_comment = comment['message']
+
+    return top_comment
 
 def get_all_photos_tagged(facebook_token):
 	photos = []
@@ -146,7 +162,7 @@ def process_request():
     #songs = r.json()['items']
     #photos = [{'id': 'p1', 'time': '2'}, {'id': 'p2', 'time': '3'},{'id': 'p3', 'time': '5'}]
     #songs =  [{'id': 's1', 'time': 1},{'id': 's2', 'time': 4}]
-    time_periods = match_songs_photos(songs,photos)
+    time_periods = match_songs_photos(songs,photos,request.args['facebook_token'])
 
     return jsonify({'time_periods': time_periods})
 
