@@ -59,7 +59,7 @@ def match_songs_photos(songs, photos, facebook_token):
         #returnString += "Adding photo + " + element + "\n"
 
     elements = sorted(elements,key=itemgetter('time'))
-    print "\n\nCOMBINED SONGS AND PHOTOS: " + str(elements) + "\n\n"
+    #print "\n\nCOMBINED SONGS AND PHOTOS: " + str(elements) + "\n\n"
 
     #return str(elements)
     #return returnString + str(elements)
@@ -83,6 +83,36 @@ def match_songs_photos(songs, photos, facebook_token):
     	    period['photos'] = period['photos'][0:6]
     if len(time_periods) > 6:
     	time_periods = time_periods[0:5]
+
+
+    comments = []
+    batchRequest = []
+    i = 0
+    for time_period in time_periods:
+    	for photo in time_period['photos']:
+    		batchRequest.append({'method':'GET', 'relative_url':photo['id'] + '/' + 'comments'})
+    		i += 1
+    		if (i >= 45):
+    			print "Making request\n"
+    			comments += requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
+    			batchRequest = []
+    			i = 0
+	#print "REQUEST " + str(json.dumps(batchRequest)) + "\n"
+	comments += requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
+	#print "NUMBER COMMENTS " + str(len(comments)) + "\n"
+	#counter = -1
+
+	for time_period in time_periods:
+		for photo in time_period['photos']:
+			#print "i is " + str(counter) + "\n"
+			#counter = counter + 1
+			try:
+				photo['comment'] =  get_top_comment(json.loads(str(comments[0]['body']))['data'])#['from']['name']
+				del comments[0]
+			except:
+				print "bad comment\n"
+
+
     return time_periods
 
 def get_all_songs(spotify_token):
@@ -148,7 +178,8 @@ def get_all_photos_uploaded(facebook_token):
 def get_all_photos(facebook_token):
 	photos = get_all_photos_uploaded(facebook_token)
 	photos.extend(get_all_photos_tagged(facebook_token))
-	print "\nPHOTOS: " + str(photos) + "\n"
+	#print "\nPHOTOS: " + str(photos) + "\n"
+	"""
 	comments = []
 	batchRequest = []
 	i = 0
@@ -156,11 +187,12 @@ def get_all_photos(facebook_token):
 		batchRequest.append({'method':'GET', 'relative_url':photo['id'] + '/' + 'comments'})
 		i += 1
 		if (i >= 45):
+			print "Making request\n"
 			comments += requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
 			batchRequest = []
 	#print "REQUEST " + str(json.dumps(batchRequest)) + "\n"
 	comments += requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
-	print "NUMBER COMMENTS " + str(len(comments)) + "\n"
+	#print "NUMBER COMMENTS " + str(len(comments)) + "\n"
 	i = 0
 	for photo in photos:
 		try:
@@ -174,7 +206,7 @@ def get_all_photos(facebook_token):
 	for comment in comments:
 		print "DATA in comment: " + comment['body'] + '\n'#['data'] + '\n'
 		print "JSONIFIED DATA: " + str(json.loads(str(comment['body']))['data']) + "\n"
-
+	"""
 	return photos
 
 @app.route("/request", methods = ["GET"])
