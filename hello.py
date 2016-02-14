@@ -39,6 +39,7 @@ def getCode():
 	return requests.post("https://accounts.spotify.com/api/token", data = {"code": request.args['code'], "grant_type": "authorization_code", "redirect_uri": "https://throwback.mybluemix.net/getCode", "client_id": "b4f179be39ec4098b5b972cdad7f03fb", "client_secret": "c951d664306649d4a29f4411e1a9c56d"}).content
 
 def match_songs_photos(songs, photos):
+    #returnString = ""
     elements = [ ]
     for s in songs:
         date_string = s['added_at']
@@ -53,15 +54,18 @@ def match_songs_photos(songs, photos):
         # print time
         element = {'type': 'photo', 'time': time, 'id': p['id']}
         elements.append(element)
+        #returnString += "Adding photo + " + element + "\n"
 
     elements = sorted(elements,key=itemgetter('time'))
+    #return str(elements)
+    #return returnString + str(elements)
 
     time_periods = [ ];
     last_song = '';
     following_photos = [ ];
     for element in elements:
         if (element['type'] == 'song'):
-            if (last_song != ''):
+            if (last_song != '' and len(following_photos) > 0):
                 time_period = {'songs': [last_song['id']], 'photos': following_photos}
                 time_periods.append(time_period)
             last_song = element
@@ -79,7 +83,7 @@ def process_request():
     r = requests.get('https://graph.facebook.com/me/photos/?fields=id,created_time&access_token=' + request.args['facebook_token'])
     photos = r.json()['data']
     # print photos
-    r = requests.get('https://api.spotify.com/v1/me/tracks?access_token=' + request.args['spotify_token'])
+    r = requests.get('https://api.spotify.com/v1/me/tracks?limit=50&offset=100&access_token=' + request.args['spotify_token'])
     songs = r.json()['items']
     #photos = [{'id': 'p1', 'time': '2'}, {'id': 'p2', 'time': '3'},{'id': 'p3', 'time': '5'}]
     #songs =  [{'id': 's1', 'time': 1},{'id': 's2', 'time': 4}]
