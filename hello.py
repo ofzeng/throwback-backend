@@ -104,12 +104,13 @@ def match_songs_photos(songs, photos, facebook_token, spotify_token):
     		batchRequest.append({'method':'GET', 'relative_url':photo['id'] + '/' + 'comments'})
     		i += 1
     		if (i >= 45):
-    			print "Making request\n"
+    			#print "Making request\n"
     			comments += requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
     			batchRequest = []
     			i = 0
 	#print "REQUEST " + str(json.dumps(batchRequest)) + "\n"
 	comments += requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
+	print "COMMENTS " + str(json.loads(str(comments[0]['body']))['data'])
 	#print "NUMBER COMMENTS " + str(len(comments)) + "\n"
 	#counter = -1
 
@@ -118,6 +119,7 @@ def match_songs_photos(songs, photos, facebook_token, spotify_token):
 			#print "i is " + str(counter) + "\n"
 			#counter = counter + 1
 			try:
+				#print "Looking at comment: " + str(comments[0])
 				photo['comment'] =  get_top_comment(json.loads(str(comments[0]['body']))['data'])#['from']['name']
 				del comments[0]
 			except:
@@ -148,7 +150,8 @@ def get_top_comment(comments):
     max_likes = 0
     top_comment = ''
     for comment in comments:
-        if comment.get('like_count', 0) > max_likes:
+    	#print "LOOKING AT COMMENT" + str(comment) + "\n"
+        if comment.get('like_count', 0) >= max_likes:
             max_likes = comment.get('like_count', 0)
             top_comment = comment['from']['name'] + ': ' + comment['message']
     end = timeit.timeit()
