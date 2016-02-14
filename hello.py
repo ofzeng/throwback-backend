@@ -62,17 +62,20 @@ def match_songs_photos(songs, photos):
     #return returnString + str(elements)
 
     time_periods = [ ];
-    last_song = '';
+    last_song = None;
     following_photos = [ ];
     for element in elements:
+    	print "loop\n"
         if (element['type'] == 'song'):
             if (last_song != '' and len(following_photos) >= 7):
                 time_period = {'songs': [last_song['id']], 'photos': following_photos}
                 time_periods.append(time_period)
-               	following_photos = [ ]
+            	following_photos = [ ]
             last_song = element
         if (element['type'] == 'photo'):
-            following_photos.append(element['id'])
+        	print "last_song: " + str(last_song) + "\n"
+        	if last_song is not None:
+        		following_photos.append(element['id'])
 
     for period in time_periods:
     	if (len(period['photos']) > 7):
