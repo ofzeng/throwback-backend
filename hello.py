@@ -99,16 +99,17 @@ def get_all_songs(spotify_token):
 def get_top_comment(photo_id,access_token):
     comments = []
 
-    r = requests.get("https://graph.facebook.com/"+photo_id+"/comments?access_token="+access_token)
+    r = requests.get("https://graph.facebook.com/" + photo_id + "/comments?access_token=" + access_token)
+    print "MESSAGES: " + r.content + "\n"
     response = r.json()
     comments = response['data'] 
     
     max_likes = 0
     top_comment = ''
     for comment in comments:
-        if comment['like_count'] > max_likes:
-            max_likes = comment['like_count']
-            top_comment = comment['message']
+        if comment.get('like_count', 0) > max_likes:
+            max_likes = comment.get('like_count', 0)
+            top_comment = comment['from']['name'] + ': ' + comment['message']
 
     return top_comment
 
