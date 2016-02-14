@@ -44,7 +44,7 @@ def match_songs_photos(songs, photos):
     for s in songs:
         date_string = s['added_at']
         time = dateutil.parser.parse(date_string)
-        uri = s['track']['album']['id']
+        uri = s['track']['uri']
         # print time
         element = {'type': 'song', 'time': time, 'id': uri}
         elements.append(element)
@@ -77,6 +77,13 @@ def match_songs_photos(songs, photos):
     time_periods.append(time_period)
 
     return time_periods
+
+def get_all_songs():
+	i = 0;
+	num_songs = 50
+	while (num_songs >= 50):
+		r = requests.get('https://api.spotify.com/v1/me/tracks?limit=50&offset=100&access_token=' + request.args['spotify_token'])
+		songs = r.json()['items']
 
 @app.route("/request", methods = ["GET"])
 def process_request():
