@@ -55,6 +55,7 @@ def match_songs_photos(songs, photos):
         element = {'type': 'photo', 'time': time, 'id': p['id']}
         elements.append(element)
         #returnString += "Adding photo + " + element + "\n"
+    print "\n\nCOMBINED SONGS AND PHOTOS: " + str(elements) + "\n\n"
 
     elements = sorted(elements,key=itemgetter('time'))
     #return str(elements)
@@ -65,7 +66,7 @@ def match_songs_photos(songs, photos):
     following_photos = [ ];
     for element in elements:
         if (element['type'] == 'song'):
-            if (last_song != '' and len(following_photos) > 7):
+            if (last_song != '' and len(following_photos) >= 7):
                 time_period = {'songs': [last_song['id']], 'photos': following_photos}
                 time_periods.append(time_period)
                	following_photos = [ ]
@@ -73,6 +74,9 @@ def match_songs_photos(songs, photos):
         if (element['type'] == 'photo'):
             following_photos.append(element['id'])
 
+    for period in time_periods:
+    	if (len(period['photos']) > 7):
+    	    period['photos'] = period['photos'][0:6]
     return time_periods
 
 def get_all_songs(spotify_token):
@@ -123,6 +127,7 @@ def get_all_photos_uploaded(facebook_token):
 def get_all_photos(facebook_token):
 	photos = get_all_photos_uploaded(facebook_token)
 	photos.extend(get_all_photos_tagged(facebook_token))
+	print "\nPHOTOS: " + str(photos) + "\n"
 	return photos
 
 @app.route("/request", methods = ["GET"])
