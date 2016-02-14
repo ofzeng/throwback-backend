@@ -65,7 +65,7 @@ def match_songs_photos(songs, photos):
     following_photos = [ ];
     for element in elements:
         if (element['type'] == 'song'):
-            if (last_song != '' and len(following_photos) > 4):
+            if (last_song != '' and len(following_photos) > 7):
                 time_period = {'songs': [last_song['id']], 'photos': following_photos}
                 time_periods.append(time_period)
                	following_photos = [ ]
