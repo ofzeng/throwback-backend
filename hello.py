@@ -52,7 +52,7 @@ def match_songs_photos(songs, photos):
         date_string = p.get('backdated_time', p['created_time'])
         time = dateutil.parser.parse(date_string)
         # print time
-        element = {'type': 'photo', 'time': time, 'id': p['id']}
+        element = {'type': 'photo', 'time': time, 'old_time': date_string, 'id': p['id']}
         elements.append(element)
         #returnString += "Adding photo + " + element + "\n"
 
@@ -74,7 +74,7 @@ def match_songs_photos(songs, photos):
             last_song = element
         if (element['type'] == 'photo'):
         	if last_song is not None:
-        		following_photos.append(element['id'])
+        		following_photos.append({'id':element['id'], 'comment':'NOT IMPLEMENTED', 'date':element['old_time']})
 
     for period in time_periods:
     	if (len(period['photos']) > 7):
