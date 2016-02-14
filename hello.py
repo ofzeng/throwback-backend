@@ -78,20 +78,29 @@ def match_songs_photos(songs, photos):
 
     return time_periods
 
-def get_all_songs():
+def get_all_songs(spotify_token):
 	i = 0;
-	num_songs = 50
-	while (num_songs >= 50):
-		r = requests.get('https://api.spotify.com/v1/me/tracks?limit=50&offset=100&access_token=' + request.args['spotify_token'])
-		songs = r.json()['items']
+	songs = []
+	next = 'https://api.spotify.com/v1/me/tracks?limit=50&offset=0'
+	while (not (next is None)):
+		print "NEXT IS " + next + "\n\n"
+		r = requests.get(next + '&access_token=' + spotify_token)
+		response = r.json()
+		print "JSON CONTENT: " + r.content + "\n\n"
+		songs.extend(response['items'])
+		#return songs
+		next = response['next']
+	return songs
 
 @app.route("/request", methods = ["GET"])
 def process_request():
     r = requests.get('https://graph.facebook.com/me/photos/?fields=id,created_time&access_token=' + request.args['facebook_token'])
     photos = r.json()['data']
     # print photos
-    r = requests.get('https://api.spotify.com/v1/me/tracks?limit=50&offset=100&access_token=' + request.args['spotify_token'])
-    songs = r.json()['items']
+    #return str(get_all_songs(request.args['spotify_token']))
+    songs = get_all_songs(request.args['spotify_token'])
+    #r = requests.get('https://api.spotify.com/v1/me/tracks?limit=50&offset=100&access_token=' + request.args['spotify_token'])
+    #songs = r.json()['items']
     #photos = [{'id': 'p1', 'time': '2'}, {'id': 'p2', 'time': '3'},{'id': 'p3', 'time': '5'}]
     #songs =  [{'id': 's1', 'time': 1},{'id': 's2', 'time': 4}]
     time_periods = match_songs_photos(songs,photos)
