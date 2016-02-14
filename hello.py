@@ -88,7 +88,7 @@ def get_all_songs(spotify_token):
 		next = response['next']
 	return songs
 
-def get_all_photos(facebook_token):
+def get_all_photos_tagged(facebook_token):
 	photos = []
 	next = 'https://graph.facebook.com/me/photos/?fields=id,created_time,backdated_time'
 	while (not (next is None)):
@@ -102,6 +102,27 @@ def get_all_photos(facebook_token):
 		except:
 			break
 		#return photos
+	return photos
+
+def get_all_photos_uploaded(facebook_token):
+	photos = []
+	next = 'https://graph.facebook.com/me/photos/uploaded/?fields=id,created_time,backdated_time'
+	while (not (next is None)):
+		#print "NEXT IS " + next + "\n\n"
+		r = requests.get(next + '&access_token=' + facebook_token)
+		response = r.json()
+		#print "JSON CONTENT: " + r.content + "\n\n"
+		try:
+			photos.extend(response['data'])
+			next = response['paging']['next']
+		except:
+			break
+		#return photos
+	return photos
+
+def get_all_photos(facebook_token):
+	photos = get_all_photos_uploaded(facebook_token)
+	photos.extend(get_all_photos_tagged(facebook_token))
 	return photos
 
 @app.route("/request", methods = ["GET"])
