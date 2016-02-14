@@ -1,2 +1,10 @@
 Flask
 requests
+print_function
+operator
+sys
+os
+json
+codecs
+parser
+requests
