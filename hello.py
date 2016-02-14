@@ -149,19 +149,17 @@ def get_all_photos(facebook_token):
 	photos = get_all_photos_uploaded(facebook_token)
 	photos.extend(get_all_photos_tagged(facebook_token))
 	print "\nPHOTOS: " + str(photos) + "\n"
-
+	comments = []
 	batchRequest = []
 	i = 0
 	for photo in photos:
-		batchRequest.append({'method':'GET', 'relative_url':photo['id'] + '/' + 'comments'})#,"body":"message=Test status update&amp;link=http://developers.facebook.com/"})
-		#batchRequest.append({'method':'GET','relative_url':'me/feed?limit=1'})
-		#print "BATCH REQUEST IS NOW " + str(batchRequest)
+		batchRequest.append({'method':'GET', 'relative_url':photo['id'] + '/' + 'comments'})
 		i += 1
 		if (i >= 45):
-			break
-	print "REQUEST " + str(json.dumps(batchRequest)) + "\n"
-
-	comments = requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
+			comments += requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
+			batchRequest = []
+	#print "REQUEST " + str(json.dumps(batchRequest)) + "\n"
+	comments += requests.post('https://graph.facebook.com', data = {'batch':json.dumps(batchRequest), 'access_token': facebook_token}).json()
 	print "NUMBER COMMENTS " + str(len(comments)) + "\n"
 	i = 0
 	for photo in photos:
