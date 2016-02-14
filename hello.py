@@ -55,9 +55,10 @@ def match_songs_photos(songs, photos):
         element = {'type': 'photo', 'time': time, 'id': p['id']}
         elements.append(element)
         #returnString += "Adding photo + " + element + "\n"
-    print "\n\nCOMBINED SONGS AND PHOTOS: " + str(elements) + "\n\n"
 
     elements = sorted(elements,key=itemgetter('time'))
+    print "\n\nCOMBINED SONGS AND PHOTOS: " + str(elements) + "\n\n"
+
     #return str(elements)
     #return returnString + str(elements)
 
@@ -65,7 +66,6 @@ def match_songs_photos(songs, photos):
     last_song = None;
     following_photos = [ ];
     for element in elements:
-    	print "loop\n"
         if (element['type'] == 'song'):
             if (last_song != '' and len(following_photos) >= 7):
                 time_period = {'songs': [last_song['id']], 'photos': following_photos}
@@ -73,7 +73,6 @@ def match_songs_photos(songs, photos):
             	following_photos = [ ]
             last_song = element
         if (element['type'] == 'photo'):
-        	print "last_song: " + str(last_song) + "\n"
         	if last_song is not None:
         		following_photos.append(element['id'])
 
